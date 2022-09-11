@@ -6,11 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-
-# 2、声明一个 源 列表；重点：要包含跨域的客户端 源
 origins = ["*"]
 
-# 3、配置 CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,  # 允许访问的源

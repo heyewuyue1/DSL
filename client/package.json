@@ -10,6 +10,7 @@
     "chatbot-antd": "^0.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-jwchat": "^1.2.1",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
