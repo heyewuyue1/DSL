@@ -10,8 +10,22 @@ export default class DSLBot extends React.Component {
         this.state = {
             modalOpen: false,  // 客服机器人窗口是否打开
             msgList: [{isUser: false, content: "欢迎使用DSL机器人客服"}],  // 呈现在聊天框里的消息列表
-            inputValue: ""  // 当前输入框中的内容
+            inputValue: "",  // 当前输入框中的内容
+            token:""
         };
+    }
+
+    handleClick = async () => {
+        if (!this.state.token) {
+            let getToken = await axios.get("http://127.0.0.1:8000/token")
+            this.setState({
+                token: getToken.data,
+            })
+        }
+        console.log(this.state.token)
+        this.setState({
+            modalOpen: true,
+        })
     }
 
     // 处理按下回车键发送消息之后的函数
@@ -21,10 +35,16 @@ export default class DSLBot extends React.Component {
     // 4. 得到非空回复后，将回复消息添加到消息列表
     handleEnter = async () => {
         let inputBox = document.getElementById("inputBox");
+        let msgBox = document.getElementById("msgBox");
+
         if (!inputBox.value)
             return;
 
-        let retStr = await axios.get("http://127.0.0.1:8000/dsl/"+inputBox.value);
+        // let retStr = await axios.get("http://127.0.0.1:8000/dsl/" + inputBox.value);
+        let retStr = await axios.post("http://127.0.0.1:8000/dsl",{
+            token: this.state.token,
+            message: inputBox.value
+          })
 
         this.setState({
             msgList: [
@@ -33,6 +53,8 @@ export default class DSLBot extends React.Component {
             ],
             inputValue: ""
         });
+        // msgBox.scrollTop = msgBox.scrollHeight
+        // console.log(111)
 
         setTimeout(() => {  // 设置500ms的延迟，让机器人回复自然一些
             if (retStr.data) {
@@ -42,9 +64,10 @@ export default class DSLBot extends React.Component {
                     {isUser: false, content: retStr.data}
                     ]
                 });
+                // msgBox.scrollTop = msgBox.scrollHeight
+                // console.log(222)
             }
         }, 500);
-        console.log(this.state.msgList);
     }
 
     // 处理用户输入，更新inputValue
@@ -65,7 +88,7 @@ export default class DSLBot extends React.Component {
 				}}
 			>
                 {/* 显示在网页上的按钮 */}
-				<Button type="primary" onClick={() => this.setState({modalOpen: true})}>
+				<Button type="primary" onClick={() => this.handleClick()}>
 					<CustomerServiceOutlined></CustomerServiceOutlined>
 				</Button>
 
