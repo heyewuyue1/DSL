@@ -4,14 +4,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from jose import jwt
 from datetime import datetime, timedelta
 
-from pydantic import BaseModel
+from bot.interpreter import MessageRequest, Robot
 import uvicorn
+
+from bot.lexer import Lexer
+from bot.parser import Parser
 
 app = FastAPI()
 
 KEY = "jasonhe"
 origins = ["*"]
 req_list = {}
+token_list = Lexer().lex()
+tree = Parser(token_list).parse()
+robot = Robot(tree)
 
 
 app.add_middleware(
@@ -22,18 +28,11 @@ app.add_middleware(
     allow_headers=["*"]  # 允许携带的 Headers
 )
 
-class MessageRequest(BaseModel):
-    token: str
-    message: str
 
 
 @app.post("/dsl")
 def give_response(msg_request: MessageRequest):
-    print(msg_request)
-    if 'a' in msg_request.message:
-        return "Contains a!"
-    else:
-        return "nope"
+    return robot.handle_message(msg_request)
 
 @app.get("/token")
 def give_token():
@@ -44,8 +43,7 @@ def give_token():
         "uid": str(len(req_list))
     }
     token = jwt.encode(token_source, KEY)
-    req_list[token] = "q0"
-    return token
+    return {"token": token, "message": robot.add_user(token)}
 
 if __name__ == '__main__':
-    uvicorn.run(app='DSL', host="127.0.0.1", port=8000, reload=True, debug=True)
+    uvicorn.run(app='main:app', host="127.0.0.1", port=8000, reload=True, debug=True)

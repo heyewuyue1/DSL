@@ -1,0 +1,35 @@
+Status main
+    Speak "What can I help you?"
+    Wait 5
+    Hear "a" aProc
+    Hear "b" bProc
+    Hear "quit" quitProc
+    Default defaultProc
+    Timeout quitProc
+
+Status aProc
+    Speak "This is status a."
+    Wait 5
+    Hear "a" quitProc
+    Hear "b" bProc
+    Default defaultProc
+    Timeout quitProc
+
+Status bProc
+    Speak "This is status b."
+    Hear "a" aProc
+    Hear "b" quitProc
+    Wait 5
+    Default defaultProc
+    Timeout quitProc
+
+Status defaultProc
+    Speak "I don't understand."
+    Wait 5
+    Hear "a" aProc
+    Hear "b" bProc
+    Default defaultProc
+    Timeout quitProc
+
+Status quitProc
+    Speak "Bye!"

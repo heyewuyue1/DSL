@@ -9,42 +9,43 @@ export default class DSLBot extends React.Component {
         super(props);
         this.state = {
             modalOpen: false,  // 客服机器人窗口是否打开
-            msgList: [{isUser: false, content: "欢迎使用DSL机器人客服"}],  // 呈现在聊天框里的消息列表
+            msgList: [],  // 呈现在聊天框里的消息列表
             inputValue: "",  // 当前输入框中的内容
             token:""
         };
     }
 
-    handleClick = async () => {
+    handleClick = () => {
         if (!this.state.token) {
-            let getToken = await axios.get("http://127.0.0.1:8000/token")
-            this.setState({
-                token: getToken.data,
+            axios.get("http://127.0.0.1:8000/token").then(result => {
+                this.setState({
+                    token: result.data.token,
+                    msgList: [
+                        ...this.state.msgList,
+                    {isUser: false, content: result.data.message}
+                    ],
+                })
             })
         }
-        console.log(this.state.token)
-        this.setState({
-            modalOpen: true,
-        })
+        this.setState({modalOpen: true})
     }
+
+    componentDidUpdate() {
+        let msgBox = document.getElementById("msgBox");
+        if (msgBox) 
+            msgBox.scrollTop = msgBox.scrollHeight - 400;
+    }
+    
 
     // 处理按下回车键发送消息之后的函数
     // 1. 将输入框清空
     // 2. 将用户消息添加到消息列表
     // 3. 将用户消息发送到服务端请求回复
     // 4. 得到非空回复后，将回复消息添加到消息列表
-    handleEnter = async () => {
+    handleEnter = () => {
         let inputBox = document.getElementById("inputBox");
-        let msgBox = document.getElementById("msgBox");
-
         if (!inputBox.value)
             return;
-
-        // let retStr = await axios.get("http://127.0.0.1:8000/dsl/" + inputBox.value);
-        let retStr = await axios.post("http://127.0.0.1:8000/dsl",{
-            token: this.state.token,
-            message: inputBox.value
-          })
 
         this.setState({
             msgList: [
@@ -52,22 +53,24 @@ export default class DSLBot extends React.Component {
                 {isUser: true, content: inputBox.value}
             ],
             inputValue: ""
-        });
-        // msgBox.scrollTop = msgBox.scrollHeight
-        // console.log(111)
+        })
 
-        setTimeout(() => {  // 设置500ms的延迟，让机器人回复自然一些
-            if (retStr.data) {
-                this.setState({
-                    msgList: [
-                        ...this.state.msgList,
-                    {isUser: false, content: retStr.data}
-                    ]
-                });
-                // msgBox.scrollTop = msgBox.scrollHeight
-                // console.log(222)
-            }
-        }, 500);
+        axios.post("http://127.0.0.1:8000/dsl",{
+            token: this.state.token,
+            message: inputBox.value
+        }).then(result => {
+            setTimeout(() => {  // 设置500ms的延迟，让机器人回复自然一些
+                if (result.data) {
+                    this.setState({
+                        msgList: [
+                            ...this.state.msgList,
+                        {isUser: false, content: result.data}
+                        ]
+                    })
+                }   
+            }, 500)
+        })
+        
     }
 
     // 处理用户输入，更新inputValue
@@ -93,7 +96,9 @@ export default class DSLBot extends React.Component {
 				</Button>
 
                 {/* 客服窗口 */}
-                <Modal open={this.state.modalOpen}
+                <Modal 
+                    id="modalWin"
+                    open={this.state.modalOpen}
                     onCancel = {() => this.setState({modalOpen: false})}
                     footer = {
                         <Input id="inputBox" suffix={<EnterOutlined />}
@@ -103,6 +108,7 @@ export default class DSLBot extends React.Component {
                             ></Input>
                     }
                     title = "DSL机器人"
+                    wrapClassName="dslMod"
                 >
                     <List id="msgBox"
                         split={false}
@@ -120,6 +126,7 @@ export default class DSLBot extends React.Component {
                             </List.Item>
                         )}>
                     </List>
+                    <span id="msgEnd" style={{overflow: "hidden"}}></span>
                 </Modal>
 			</div>
 		</div>
