@@ -10,14 +10,20 @@ import uvicorn
 from bot.lexer import Lexer
 from bot.parser import Parser
 
+import sys
+
+filePath = "server/test/Hello.bot"
+if len(sys.argv) >= 2:
+    filePath = sys.argv[1]
+token_list = Lexer(filePath).lex()
+tree = Parser(token_list).parse()
+robot = Robot(tree)
+
 app = FastAPI()
 
 KEY = "jasonhe"
 origins = ["*"]
 req_list = {}
-token_list = Lexer().lex()
-tree = Parser(token_list).parse()
-robot = Robot(tree)
 
 
 app.add_middleware(
@@ -43,7 +49,8 @@ def give_token():
         "uid": str(len(req_list))
     }
     token = jwt.encode(token_source, KEY)
-    return {"token": token, "message": robot.add_user(token)}
+    ret = robot.add_user(token)
+    return {"token": token, "wait": ret["wait"], "message": ret["message"]}
 
 if __name__ == '__main__':
     uvicorn.run(app='main:app', host="127.0.0.1", port=8000, reload=True, debug=True)

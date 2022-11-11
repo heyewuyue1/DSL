@@ -1,5 +1,7 @@
+%name% = "He Jiahao"
+
 Status main
-    Speak "What can I help you?"
+    Speak "What can I help you, %name%?"
     Wait 5
     Hear "a" aProc
     Hear "b" bProc
@@ -32,4 +34,5 @@ Status defaultProc
     Timeout quitProc
 
 Status quitProc
-    Speak "Bye!"
+    %name% = "Jiahao He"
+    Speak "Bye %name%!"
