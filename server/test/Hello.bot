@@ -1,15 +1,17 @@
 %name% = "He Jiahao"
+%num% = 0
 
 Status main
     Speak "What can I help you, %name%?"
     Wait 5
-    Hear "a" aProc
-    Hear "b" bProc
+    Hear "ab*c" aProc
+    Hear "bc*d" bProc
     Hear "quit" quitProc
     Default defaultProc
     Timeout quitProc
 
 Status aProc
+	%num% = 1
     Speak "This is status a."
     Wait 5
     Hear "a" quitProc
@@ -18,6 +20,7 @@ Status aProc
     Timeout quitProc
 
 Status bProc
+	%num% = 2
     Speak "This is status b."
     Hear "a" aProc
     Hear "b" quitProc
@@ -26,6 +29,7 @@ Status bProc
     Timeout quitProc
 
 Status defaultProc
+	%num% = 3
     Speak "I don't understand."
     Wait 5
     Hear "a" aProc
@@ -34,5 +38,5 @@ Status defaultProc
     Timeout quitProc
 
 Status quitProc
-    %name% = "Jiahao He"
-    Speak "Bye %name%!"
+	%name% = "Jiahao He"
+    Speak "Bye, %name%!The num is %num%."

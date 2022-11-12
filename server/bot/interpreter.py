@@ -17,8 +17,7 @@ class Robot(object):
     def __init__(self, _tree: dict) -> None:
         self.user_list = {}
         self.tree = _tree
-        if self.tree.get("main") == None:
-            raise RuntimeError("No main status to begin with.")
+        
 
     def add_user(self, token: str) -> str:
         user_info = {

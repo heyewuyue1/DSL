@@ -12,7 +12,7 @@ from bot.parser import Parser
 
 import sys
 
-filePath = "server/test/Hello.bot"
+filePath = "test/Hello.bot"
 if len(sys.argv) >= 2:
     filePath = sys.argv[1]
 token_list = Lexer(filePath).lex()
