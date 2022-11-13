@@ -16,34 +16,31 @@ export default class DSLBot extends React.Component {
         };
     }
 
+    /**
+     * @description: 处理页面上的客服按钮点击事件
+     *               1. 请求到token
+     *               2. 设置token
+     *               3. 调用handleResponse处理message和wait
+     * @return {*}
+     */
     handleClick = () => {
         if (!this.state.token) {
             axios.get("http://127.0.0.1:8000/token").then(result => {
                 if (result.data.message) {
                     this.setState({
-                        token: result.data.token,
-                        msgList: [
-                            ...this.state.msgList,
-                            { isUser: false, content: result.data.message }]
+                        token: result.data.token
                     })
                 }
-                if (this.state.timerID !== -1) {
-                    clearTimeout(this.state.timerID)
-                }
-                if (result.data.wait > 0) {
-                    let _timerID = setTimeout(() => {
-                        axios.post("http://127.0.0.1:8000/dsl", {
-                            token: this.state.token,
-                            message: "!!!timeout"
-                        }).then(result => this.handleResponse(result))
-                    }, result.data.wait * 1000)
-                    this.setState({ timerID: _timerID })
-                }
+                this.handleResponse(result)
             })
         }
         this.setState({ modalOpen: true })
     }
 
+    /**
+     * @description: 每次消息列表更新时，把滚动条移动到最下方
+     * @return {*}
+     */
     componentDidUpdate() {
         let msgBox = document.getElementById("msgBox");
         if (msgBox)
@@ -51,6 +48,14 @@ export default class DSLBot extends React.Component {
     }
 
 
+    /**
+     * @description: 处理从后端得到的应答中的message字段和wait字段
+     *               1. 在msgList中添加message
+     *               2. 设定计时器
+     *               3. 在计时器触发后向后端发送超时信息，并回调自身处理应答
+     * @param {*} response 从后端得到的应答
+     * @return {*}
+     */
     handleResponse = (response) => {
         setTimeout(() => {  // 设置500ms的延迟，让机器人回复自然一些
             if (response.data.message) {
@@ -75,11 +80,15 @@ export default class DSLBot extends React.Component {
         }, 500)
     }
 
-    // 处理按下回车键发送消息之后的函数
-    // 1. 将输入框清空
-    // 2. 将用户消息添加到消息列表
-    // 3. 将用户消息发送到服务端请求回复
-    // 4. 得到非空回复后，将回复消息添加到消息列表
+
+    /**
+     * @description: 处理按下回车键发送消息之后的函数
+                     1. 将输入框清空
+                     2. 将用户消息添加到消息列表
+                     3. 将用户消息发送到服务端请求回复
+                     4. 得到非空回复后，将回复消息添加到消息列表
+     * @return {*}
+     */
     handleEnter = () => {
         let inputBox = document.getElementById("inputBox");
         if (!inputBox.value)
@@ -100,7 +109,12 @@ export default class DSLBot extends React.Component {
 
     }
 
-    // 处理用户输入，更新inputValue
+    
+    /**
+     * @description: 每次用户更新输入框的内容时，更新inputValue
+     * @param {*} event 用户输入事件
+     * @return {*}
+     */
     keyUp = (event) => {
         this.setState({
             inputValue: event.target.value
@@ -127,6 +141,7 @@ export default class DSLBot extends React.Component {
                         id="modalWin"
                         open={this.state.modalOpen}
                         onCancel={() => this.setState({ modalOpen: false })}
+                        // 对话框的脚部是一个输入框
                         footer={
                             <Input id="inputBox" suffix={<EnterOutlined />}
                                 onPressEnter={() => this.handleEnter()}
@@ -137,6 +152,7 @@ export default class DSLBot extends React.Component {
                         title="DSL机器人"
                         wrapClassName="dslMod"
                     >
+                        {/*对话框的内容是一个列表*/}
                         <List id="msgBox"
                             split={false}
                             dataSource={this.state.msgList}
@@ -152,6 +168,7 @@ export default class DSLBot extends React.Component {
                                     <RobotItem isUser={item.isUser} text={item.content}></RobotItem>
                                 </List.Item>
                             )}>
+                            {/*实时呈现this.state.msgList中的内容，通过this.handleResponse()函数更新*/}
                         </List>
                         <span id="msgEnd" style={{ overflow: "hidden" }}></span>
                     </Modal>

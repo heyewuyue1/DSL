@@ -1,3 +1,9 @@
+'''
+Description: 后端应答模块，采用FastAPI实现
+Author: He Jiahao
+Date: 2022-09-09 17:05:54
+LastEditTime: 2022-11-13 15:33:55
+'''
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,15 +26,11 @@ tree = Parser(token_list).parse()
 robot = Robot(tree)
 
 app = FastAPI()
-
-KEY = "jasonhe"
-origins = ["*"]
-req_list = {}
-
+key = "jasonhe"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # 允许访问的源
+    allow_origins=["*"],  # 允许访问的源
     allow_credentials=True,  # 支持 cookie
     allow_methods=["*"],  # 允许使用的请求方法
     allow_headers=["*"]  # 允许携带的 Headers
@@ -36,19 +38,29 @@ app.add_middleware(
 
 
 
+'''
+description: 接收到前端发来的消息之后给出应答
+param {MessageRequest} msg_request 接收到的用户消息
+return {dict} 等待时间和要回复的消息
+'''
 @app.post("/dsl")
 def give_response(msg_request: MessageRequest):
     return robot.handle_message(msg_request)
 
+
+'''
+description: 接收到前端发来的请求token之后发给它一个token
+return {dict} token，main状态的等待时间和要回复的消息
+'''
 @app.get("/token")
 def give_token():
     limit = datetime.utcnow() + timedelta(3600)
     token_source = {
         "exp": limit,
-        "sub": KEY,
-        "uid": str(len(req_list))
+        "sub": key,
+        "uid": str(robot.user_cnt)
     }
-    token = jwt.encode(token_source, KEY)
+    token = jwt.encode(token_source, key)
     ret = robot.add_user(token)
     return {"token": token, "wait": ret["wait"], "message": ret["message"]}
 
