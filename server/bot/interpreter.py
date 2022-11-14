@@ -2,7 +2,7 @@
 Description: 依照语法树解释执行机器人逻辑
 Author: He Jiahao
 Date: 2022-09-23 14:38:49
-LastEditTime: 2022-11-14 14:17:04
+LastEditTime: 2022-11-14 15:02:04
 '''
 from pydantic import BaseModel
 from bot.parser import WaitType
@@ -59,8 +59,6 @@ class Robot(object):
             message = self.tree["main"]["Speak"]
             for var in self.user_list[token]["__GLOBAL__"]:
                 message = message.replace(var, str(self.user_list[token]["__GLOBAL__"][var]))
-            if re.match("%(.*)%", message):
-                raise RuntimeError("There is an undefined reference in response: " + message)
         if self.tree["main"].get("Wait"):
             wait = self.tree["main"]["Wait"]
         self.user_cnt += 1
@@ -119,8 +117,6 @@ class Robot(object):
             message = self.tree[next_status]["Speak"]
             for var in self.user_list[msg_req.token]["__GLOBAL__"]:
                 message = message.replace(var, str(self.user_list[msg_req.token]["__GLOBAL__"][var]))
-            if re.match("%(.*)%", message):
-                raise RuntimeError("There is an undefined reference in response: " + message)
         if self.tree[next_status].get("Wait"):
             wait = self.tree[next_status]["Wait"]
         if not self.tree[next_status].get("Wait") and not self.tree[next_status].get("Default") and not self.tree[next_status].get("Hear"):
