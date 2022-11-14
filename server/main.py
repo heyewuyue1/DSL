@@ -1,9 +1,10 @@
-'''
+"""
 Description: 后端应答模块，采用FastAPI实现
 Author: He Jiahao
 Date: 2022-09-09 17:05:54
 LastEditTime: 2022-11-13 15:33:55
-'''
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,7 +19,7 @@ from bot.parser import Parser
 
 import sys
 
-filePath = "test/Hello.bot"
+filePath = "test/lex/Hello.bot"
 if len(sys.argv) >= 2:
     filePath = sys.argv[1]
 token_list = Lexer(filePath).lex()

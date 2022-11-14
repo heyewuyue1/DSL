@@ -2,18 +2,10 @@
 Description: 词法分析模块，将从文件读入字符流转换成为一个记号流
 Author: He Jiahao
 Date: 2022-09-30 15:31:54
-LastEditTime: 2022-11-12 16:32:29
+LastEditTime: 2022-11-13 22:49:54
 '''
 
 from enum import IntEnum
-
-token_type_str = [
-    "Keyword",
-    "Status",
-    "constNum",
-    "constStr",
-    "Error"
-]
 
 keyword_str = [
     "Status",
@@ -22,11 +14,12 @@ keyword_str = [
     "Hear",
     "Default",
     "Timeout",
+    "Identifier",
+    "Operator"
 ]
 
 
 class LexError(Exception):
-
     '''
     description: 用于报出词法分析阶段的错误
     param {*} self
@@ -44,9 +37,8 @@ class TokenType(IntEnum):
     ConstNum = 2
     ConstStr = 3
     Error = 4
-    Typename = 5
-    Identifier = 6
-    Operator = 7
+    Identifier = 5
+    Operator = 6
 
 
 class Token(object):
@@ -69,7 +61,7 @@ class Token(object):
     '''
 
     def __str__(self) -> str:
-        return '<'+token_type_str[self._type]+', ' + self._attr + '>'
+        return '<' + str(self._type) + ', ' + self._attr + '>'
 
 
 class Lexer(object):
@@ -133,6 +125,9 @@ class Lexer(object):
             elif buf[i] == '=':
                 i += 1
                 self.token_list.append(Token(TokenType.Operator, '='))
+            else:
+                raise LexError("Unexpected word " + buf[i]) 
+
         return self.token_list
 
     '''
@@ -140,12 +135,11 @@ class Lexer(object):
     param {*} self
     return {*}
     '''
+
     def show_list(self) -> None:
         for token in self.token_list:
             print(token)
+    
+    def __del__(self) -> None:
+        self.input.close()
 
-
-if __name__ == "__main__":
-    bot_lexer = Lexer("test/Hello.bot")
-    bot_lexer.lex()
-    bot_lexer.show_list()

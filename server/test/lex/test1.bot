@@ -1,0 +1,6 @@
+Status main
+    Speak "Hello"
+    Hear "a?bbc main
+    Wait 5
+    Defaut main
+    Timeout main

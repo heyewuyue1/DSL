@@ -2,7 +2,7 @@
 Description: 依照语法树解释执行机器人逻辑
 Author: He Jiahao
 Date: 2022-09-23 14:38:49
-LastEditTime: 2022-11-13 15:33:04
+LastEditTime: 2022-11-14 14:17:04
 '''
 from pydantic import BaseModel
 from bot.parser import WaitType
@@ -59,6 +59,8 @@ class Robot(object):
             message = self.tree["main"]["Speak"]
             for var in self.user_list[token]["__GLOBAL__"]:
                 message = message.replace(var, str(self.user_list[token]["__GLOBAL__"][var]))
+            if re.match("%(.*)%", message):
+                raise RuntimeError("There is an undefined reference in response: " + message)
         if self.tree["main"].get("Wait"):
             wait = self.tree["main"]["Wait"]
         self.user_cnt += 1
@@ -71,7 +73,6 @@ class Robot(object):
     return {dict} 返回一个字典，代表处理的结果
     '''
     def handle_message(self, msg_req: MessageRequest) -> dict:
-        print (str(self.user_cnt))
         if not self.user_list.get(msg_req.token):
             return {"wait": WaitType.Forever, "message": "the conversation is over."}
         transfer = True
@@ -107,6 +108,8 @@ class Robot(object):
                 transfer = False
 
         # 转移到新状态之后，先为变量赋值
+        if not self.tree.get(next_status):
+            raise RuntimeError("Undefined status: " + next_status)
         for var in self.tree[next_status]["Operate"]:
             self.user_list[msg_req.token]["__GLOBAL__"][var] = self.tree[next_status]["Operate"][var]
         # 再决定等待时间和应答消息
@@ -114,9 +117,10 @@ class Robot(object):
         wait = WaitType.Forever
         if transfer and self.tree[next_status].get("Speak"):
             message = self.tree[next_status]["Speak"]
-            print(self.user_list[msg_req.token])
             for var in self.user_list[msg_req.token]["__GLOBAL__"]:
                 message = message.replace(var, str(self.user_list[msg_req.token]["__GLOBAL__"][var]))
+            if re.match("%(.*)%", message):
+                raise RuntimeError("There is an undefined reference in response: " + message)
         if self.tree[next_status].get("Wait"):
             wait = self.tree[next_status]["Wait"]
         if not self.tree[next_status].get("Wait") and not self.tree[next_status].get("Default") and not self.tree[next_status].get("Hear"):

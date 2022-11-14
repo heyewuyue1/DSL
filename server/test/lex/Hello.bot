@@ -1,4 +1,4 @@
-%name% = "He Jiahao"
+
 %num% = 0
 
 Status main
@@ -38,5 +38,5 @@ Status defaultProc
     Timeout quitProc
 
 Status quitProc
-	%name% = "Jiahao He"
+
     Speak "Bye, %name%!The num is %num%."
