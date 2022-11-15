@@ -2,7 +2,7 @@
 Description: 词法分析模块，将从文件读入字符流转换成为一个记号流
 Author: He Jiahao
 Date: 2022-09-30 15:31:54
-LastEditTime: 2022-11-13 22:49:54
+LastEditTime: 2022-11-15 22:43:06
 '''
 
 from enum import IntEnum

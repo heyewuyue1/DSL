@@ -11,7 +11,8 @@ export default class DSLBot extends React.Component {
             modalOpen: false,  // 客服机器人窗口是否打开
             msgList: [],  // 呈现在聊天框里的消息列表
             inputValue: "",  // 当前输入框中的内容
-            token: "",  // 当前用户Token
+            status: "_START_",
+            varList: {},
             timerID: -1
         };
     }
@@ -24,15 +25,13 @@ export default class DSLBot extends React.Component {
      * @return {*}
      */
     handleClick = () => {
-        if (!this.state.token) {
-            axios.get("http://127.0.0.1:8000/token").then(result => {
-                if (result.data.message) {
-                    this.setState({
-                        token: result.data.token
-                    })
-                }
-                this.handleResponse(result)
-            })
+        if (this.state.status === "_START_") {
+            axios.get("http://127.0.0.1:8000/dsl",{
+                params: {
+                    status: this.state.status,
+                    message: "Hello server!"
+                },
+            }).then(result => this.handleResponse(result))
         }
         this.setState({ modalOpen: true })
     }
@@ -58,21 +57,34 @@ export default class DSLBot extends React.Component {
      */
     handleResponse = (response) => {
         setTimeout(() => {  // 设置500ms的延迟，让机器人回复自然一些
+            let newVarList = this.state.varList
+            for (let k in response.data.var){
+                newVarList[k] = response.data.var[k]
+            }
+            this.setState({
+                status: response.data.status,
+                varList: newVarList
+            })
             if (response.data.message) {
+                let mes = response.data.message
+                for (let v in this.state.varList)
+                    mes = mes.replace(v, this.state.varList[v])
                 this.setState({
                     msgList: [
                         ...this.state.msgList,
-                        { isUser: false, content: response.data.message }]
+                        { isUser: false, content: mes }
+                    ]
                 })
             }
-            if (this.state.timerID !== -1) {
+            if (this.state.timerID !== -1)
                 clearTimeout(this.state.timerID)
-            }
             if (response.data.wait > 0) {
                 let _timerID = setTimeout(() => {
-                    axios.post("http://127.0.0.1:8000/dsl", {
-                        token: this.state.token,
-                        message: "!!!timeout"
+                    axios.get("http://127.0.0.1:8000/dsl", {
+                        params:{
+                            status: this.state.status,
+                            message: "!!!timeout"
+                        }
                     }).then(result => this.handleResponse(result))
                 }, response.data.wait * 1000)
                 this.setState({ timerID: _timerID })
@@ -89,10 +101,17 @@ export default class DSLBot extends React.Component {
                      4. 得到非空回复后，将回复消息添加到消息列表
      * @return {*}
      */
-    handleEnter = () => {
+    getDslResp = () => {
         let inputBox = document.getElementById("inputBox");
         if (!inputBox.value)
             return;
+
+        axios.get("http://127.0.0.1:8000/dsl", {
+            params: {
+                status: this.state.status,
+                message: inputBox.value
+            }
+        }).then(result => this.handleResponse(result))
 
         this.setState({
             msgList: [
@@ -101,11 +120,6 @@ export default class DSLBot extends React.Component {
             ],
             inputValue: ""
         })
-
-        axios.post("http://127.0.0.1:8000/dsl", {
-            token: this.state.token,
-            message: inputBox.value
-        }).then(result => this.handleResponse(result))
 
     }
 
@@ -144,7 +158,7 @@ export default class DSLBot extends React.Component {
                         // 对话框的脚部是一个输入框
                         footer={
                             <Input id="inputBox" suffix={<EnterOutlined />}
-                                onPressEnter={() => this.handleEnter()}
+                                onPressEnter={() => this.getDslResp()}
                                 onChange={this.keyUp}
                                 value={this.state.inputValue}
                             ></Input>

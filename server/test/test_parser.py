@@ -35,10 +35,6 @@ class ParserTest(unittest.TestCase):
     
     # 正常输出
     result1 = {
-        '__GLOBAL__': {
-        '%name%': 'He Jiahao',
-        '%num%': '0'
-        },
     'main': {
         'Speak': 'What can I help you, %name%?',
         'Wait': 5,

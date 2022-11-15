@@ -2,7 +2,7 @@
 Description: 语法分析模块，将输入的记号流转化为语法树
 Author: He Jiahao
 Date: 2022-10-01 11:43:32
-LastEditTime: 2022-11-14 13:45:51
+LastEditTime: 2022-11-15 19:16:15
 '''
 from bot.lexer import Token, TokenType
 from enum import IntEnum
@@ -38,10 +38,9 @@ class Parser(object):
         self._token_list = token_list
         self.has_main = False
         self.tree = {
-            "__GLOBAL__":{},
             "main":{
                 "Speak": "",
-                "Wait": None,
+                "Wait": WaitType.Forever,
                 "Hear": {},
                 "Default": "",
                 "Timeout": "",
@@ -65,7 +64,7 @@ class Parser(object):
                 raise ParseError("Duplicate Status name: " + self._token_list[self.idx]._attr)
             self.tree[self._token_list[self.idx]._attr] = {
                 "Speak": "",
-                "Wait": None,
+                "Wait": WaitType.Forever,
                 "Hear": {},
                 "Default": "",
                 "Timeout": "",
@@ -158,7 +157,6 @@ class Parser(object):
             next_token = self._token_list[self.idx]
             if next_token._type == TokenType.ConstNum or next_token._type == TokenType.ConstStr:
                 value = next_token._attr
-                self.tree["__GLOBAL__"][id_name] = value
                 op_state = self.current_status
                 if op_state == "":
                     op_state = "main"
@@ -166,8 +164,6 @@ class Parser(object):
                 self.idx += 1
             else:
                 raise ParseError("Expected a number or a string constant")
-        else:
-            self.tree["__GLOBAL__"][id_name] = None
 
     '''
     description: 在每一次解析完一个状态之后运行的状态检查

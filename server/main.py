@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from jose import jwt
 from time import time
 
-from bot.interpreter import MessageRequest, Robot
+from bot.interpreter import Robot
 import uvicorn
 
 from bot.lexer import Lexer
@@ -20,7 +20,6 @@ from bot.parser import Parser
 import sys
 
 file_path = "test/lex/Hello.bot"
-expire_time = 3600
 key = "jasonhe"
 if len(sys.argv) >= 2:
     filePath = sys.argv[1]
@@ -44,18 +43,9 @@ param {MessageRequest} msg_request 接收到的用户消息
 return {dict} 等待时间和要回复的消息
 '''
 
-@app.post("/dsl")
-def give_response(msg_request: MessageRequest):
-    return robot.handle_message(msg_request)
-
-'''
-description: 接收到前端发来的请求token之后删除user_list中已经超时的会话，再给请求者发一个token
-return {dict} token，main状态的等待时间和要回复的消息
-'''
-
-@app.get("/token")
-def give_token():
-    return robot.add_user()
+@app.get("/dsl")
+def give_response(status: str, message: str):
+    return robot.handle_message(status, message)
 
 
 if __name__ == '__main__':
