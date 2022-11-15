@@ -11,17 +11,14 @@ export default class DSLBot extends React.Component {
             modalOpen: false,  // 客服机器人窗口是否打开
             msgList: [],  // 呈现在聊天框里的消息列表
             inputValue: "",  // 当前输入框中的内容
-            status: "_START_",
-            varList: {},
-            timerID: -1
+            status: "_START_", // 客户端当前状态
+            varList: {},  // 客户端变量表
+            timerID: -1  // 客户端当前计时器ID
         };
     }
 
     /**
-     * @description: 处理页面上的客服按钮点击事件
-     *               1. 请求到token
-     *               2. 设置token
-     *               3. 调用handleResponse处理message和wait
+     * @description: 处理页面上的客服按钮点击事件，本质是一次特殊的getDslResp
      * @return {*}
      */
     handleClick = () => {
@@ -37,25 +34,54 @@ export default class DSLBot extends React.Component {
     }
 
     /**
-     * @description: 每次消息列表更新时，把滚动条移动到最下方
+     * @description: 处理按下回车键发送消息之后的函数
+                     1. 将输入框清空
+                     2. 将"_text_"的值赋为输入框的字符串
+                     3. 将用户消息添加到消息列表
+                     4. 将用户消息发送到服务端请求回复
+                     5. 调用handleResponse函数处理回复
      * @return {*}
      */
-    componentDidUpdate() {
-        let msgBox = document.getElementById("msgBox");
-        if (msgBox)
-            msgBox.scrollTop = msgBox.scrollHeight - 400;
+    getDslResp = () => {
+        let inputBox = document.getElementById("inputBox");
+        if (!inputBox.value)
+            return;
+        let tmpList = this.state.varList
+        for (let v in tmpList)
+            if (tmpList[v] === "_text_")
+                tmpList[v] = inputBox.value
+        this.setState({
+            varList: tmpList
+        })
+
+        axios.get("http://127.0.0.1:8000/dsl", {
+            params: {
+                status: this.state.status,
+                message: inputBox.value
+            }
+        }).then(result => this.handleResponse(result))
+
+        this.setState({
+            msgList: [
+                ...this.state.msgList,
+                { isUser: true, content: inputBox.value }
+            ],
+            inputValue: ""
+        })
+
     }
 
-
     /**
-     * @description: 处理从后端得到的应答中的message字段和wait字段
-     *               1. 在msgList中添加message
-     *               2. 设定计时器
-     *               3. 在计时器触发后向后端发送超时信息，并回调自身处理应答
+     * @description: 处理从后端得到的应答
+     *               1. 更新this.state.varList中变量的值
+     *               2. 用变量表里的值替换回复的字符串中的占位符
+     *               3. 将处理完毕的字符串添加到消息列表中
+     *               4. 设定计时器
+     *               5. 在计时器触发后向后端发送超时信息，并回调自身处理应答
      * @param {*} response 从后端得到的应答
      * @return {*}
      */
-    handleResponse = (response) => {
+     handleResponse = (response) => {
         setTimeout(() => {  // 设置500ms的延迟，让机器人回复自然一些
             let newVarList = this.state.varList
             for (let k in response.data.var){
@@ -92,37 +118,15 @@ export default class DSLBot extends React.Component {
         }, 500)
     }
 
-
     /**
-     * @description: 处理按下回车键发送消息之后的函数
-                     1. 将输入框清空
-                     2. 将用户消息添加到消息列表
-                     3. 将用户消息发送到服务端请求回复
-                     4. 得到非空回复后，将回复消息添加到消息列表
+     * @description: 每次消息列表更新时，把滚动条移动到最下方
      * @return {*}
      */
-    getDslResp = () => {
-        let inputBox = document.getElementById("inputBox");
-        if (!inputBox.value)
-            return;
-
-        axios.get("http://127.0.0.1:8000/dsl", {
-            params: {
-                status: this.state.status,
-                message: inputBox.value
-            }
-        }).then(result => this.handleResponse(result))
-
-        this.setState({
-            msgList: [
-                ...this.state.msgList,
-                { isUser: true, content: inputBox.value }
-            ],
-            inputValue: ""
-        })
-
+    componentDidUpdate() {
+        let msgBox = document.getElementById("msgBox");
+        if (msgBox)
+            msgBox.scrollTop = msgBox.scrollHeight - 400;
     }
-
 
     /**
      * @description: 每次用户更新输入框的内容时，更新inputValue

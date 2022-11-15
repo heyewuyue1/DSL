@@ -19,17 +19,10 @@ app.add_middleware(
     allow_headers=["*"]  # 允许携带的 Headers
 )
 
-@app.post("/dsl")
-def give_response(msg_request: MessageRequest):
-    return {"message": ''.join(random.sample(string.ascii_letters + string.digits, 8)),
-            "wait": random.randint(1, 10)}
-
-@app.get("/token")
-def give_token():
-    return {
-        "token": ''.join(random.sample(string.ascii_letters + string.digits, 8)), 
-        "wait": random.randint(1, 10),
-        "message": ''.join(random.sample(string.ascii_letters + string.digits, 8))}
+@app.get("/dsl")
+def give_response(status: str, message: str):
+    return {"status": "main", "message": ''.join(random.sample(string.ascii_letters + string.digits, 8)),
+            "wait": random.randint(1, 10), "var":{}}
 
 if __name__ == '__main__':
     uvicorn.run(app='sim_server:app', host="127.0.0.1", port=8000, reload=True, debug=True)

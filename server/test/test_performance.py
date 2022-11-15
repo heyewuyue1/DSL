@@ -8,9 +8,11 @@ class PerformanceTest(unittest.TestCase):
     url = "http://127.0.0.1:8000/dsl"
     message = ['abbc', 'bccd', '!!!timeout', 'default']
     def sim_client(self):
+        # 随机发送消息
         sel = random.randint(0, 3)
         res = requests.get(self.url, {"status": "main", "message": self.message[sel]})
         self.assertEqual(res.status_code, 200)
+        # 根据发送的不同消息，判断相应的回复
         if sel == 0:
             self.assertEqual(eval(res.text)["status"], "aProc")
             self.assertEqual(eval(res.text)["wait"], 5)

@@ -2,9 +2,11 @@
 Description: 依照语法树解释执行机器人逻辑
 Author: He Jiahao
 Date: 2022-09-23 14:38:49
-LastEditTime: 2022-11-15 19:41:23
+LastEditTime: 2022-11-16 00:03:32
 '''
+
 import re
+
 
 class RuntimeError(Exception):
     '''
@@ -13,6 +15,7 @@ class RuntimeError(Exception):
     param {str} _msg 错误信息
     return {*}
     '''
+
     def __init__(self, _msg: str) -> None:
         self.msg = _msg
 
@@ -24,6 +27,7 @@ class Robot(object):
     param {dict} _tree 语法分析阶段生成的语法树
     return {*}
     '''
+
     def __init__(self, tree: dict) -> None:
         self.tree = tree
 
@@ -33,6 +37,7 @@ class Robot(object):
     param {MessageRequest} msg_req 接收到的前端的消息
     return {dict} 返回一个字典，代表处理的结果
     '''
+
     def handle_message(self, status: str, message: str) -> dict:
         transfer = True
         # 先决定接受到这条消息之后转移到哪个状态

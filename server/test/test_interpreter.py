@@ -31,7 +31,7 @@ class InterpreterTest(unittest.TestCase):
             'Operate': {},
         }
     }
-
+    
     def test_normal(self):
         robot = Robot(self.stub)
         self.assertEqual(robot.handle_message("main", "a"),

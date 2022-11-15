@@ -1,0 +1,44 @@
+Status main
+    Speak "您好，下面将收集您的相关信息。"
+    Wait 1
+    Timeout setName
+
+Status setName
+    Speak "请输入您的姓名："
+    %name% = "_text_"
+    Wait 180
+    Timeout timeoutProc
+    Default setClass
+
+Status setClass
+    Speak "请输入您的班级："
+    %class% = "_text_"
+    Wait 180
+    Timeout timeoutProc
+    Default setId
+
+Status setId
+    Speak "请输入您的学号："
+    %id% = "_text_"
+    Wait 180
+    Timeout timeoutProc
+    Default showInfo
+
+Status showInfo
+    Speak "姓名：%name%；班级：%class%；学号：%id%"
+    Wait 1
+    Timeout confirm
+
+Status confirm
+    Speak "请确认以上信息是否正确，如果正确请回复“是”退出并保存，否则回复“否”重新输入信息"
+    Wait 180
+    Hear "是" quitProc
+    Hear "否" setName
+    Default confirm
+    Timeout quit
+
+Status timeoutProc
+    Speak "您已经很久没有操作了，连接已断开"
+
+Status quitProc
+    Speak "感谢您的配合！"
