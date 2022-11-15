@@ -126,7 +126,7 @@ class Lexer(object):
                 i += 1
                 self.token_list.append(Token(TokenType.Operator, '='))
             else:
-                raise LexError("Unexpected word " + buf[i]) 
+                raise LexError("Unexpected word " + buf[i])
 
         return self.token_list
 
@@ -139,7 +139,6 @@ class Lexer(object):
     def show_list(self) -> None:
         for token in self.token_list:
             print(token)
-    
+
     def __del__(self) -> None:
         self.input.close()
-

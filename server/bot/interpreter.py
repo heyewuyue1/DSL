@@ -2,11 +2,14 @@
 Description: 依照语法树解释执行机器人逻辑
 Author: He Jiahao
 Date: 2022-09-23 14:38:49
-LastEditTime: 2022-11-14 15:02:04
+LastEditTime: 2022-11-15 15:02:21
 '''
 from pydantic import BaseModel
 from bot.parser import WaitType
 import re
+from threading import Lock
+from time import time
+from jose import jwt
 
 
 class MessageRequest(BaseModel):
@@ -32,10 +35,13 @@ class Robot(object):
     param {dict} _tree 语法分析阶段生成的语法树
     return {*}
     '''
-    def __init__(self, _tree: dict) -> None:
+    def __init__(self, _tree: dict, key: str="jasonhe", expire_time: int=3600) -> None:
         self.user_list = {}
         self.tree = _tree
         self.user_cnt = 0
+        self.mutex = Lock()
+        self.key = key
+        self.expire_time = expire_time
         
 
     '''
@@ -44,13 +50,32 @@ class Robot(object):
     param {str} token 指定的token
     return {dict} 返回一个字典，代表"main"状态的执行结果
     '''
-    def add_user(self, token: str) -> dict:
+    def add_user(self) -> dict:
+        now = time()
+        pop_list = []
+        self.mutex.acquire()
+        for token in self.user_list:
+            try:
+                jwt.decode(token, self.key)
+            except:
+                pop_list += token
+        for token in pop_list:
+            self.user_list.pop(token)
+        self.mutex.release()
+        token_source = {
+            "exp": now + self.expire_time,
+            "sub": self.key,
+            "uid": str(self.user_cnt)
+        }
+        token = jwt.encode(token_source, self.key)
         user_info = {
             "status": "main",
             "__GLOBAL__": {}
         }
         user_info["__GLOBAL__"] = self.tree["__GLOBAL__"]
+        self.mutex.acquire()
         self.user_list[token] = user_info
+        self.mutex.release()
         for var in self.tree["main"]["Operate"]:
             self.user_list[token]["__GLOBAL__"][var] = self.tree["main"]["Operate"][var]
         message = ""
@@ -62,7 +87,7 @@ class Robot(object):
         if self.tree["main"].get("Wait"):
             wait = self.tree["main"]["Wait"]
         self.user_cnt += 1
-        return {"wait": wait, "message": message}
+        return {"token": token, "wait": wait, "message": message}
 
     '''
     description: 处理一条来自前端的消息
@@ -120,6 +145,8 @@ class Robot(object):
         if self.tree[next_status].get("Wait"):
             wait = self.tree[next_status]["Wait"]
         if not self.tree[next_status].get("Wait") and not self.tree[next_status].get("Default") and not self.tree[next_status].get("Hear"):
+            self.mutex.acquire()
             self.user_cnt -= 1
             self.user_list.pop(msg_req.token)
+            self.mutex.release()
         return {"wait": wait, "message": message}
