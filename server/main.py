@@ -2,7 +2,7 @@
 Description: 后端应答模块，采用FastAPI实现
 Author: He Jiahao
 Date: 2022-09-09 17:05:54
-LastEditTime: 2022-11-16 00:03:54
+LastEditTime: 2022-11-16 13:36:11
 '''
 
 from fastapi import FastAPI
@@ -17,7 +17,6 @@ from bot.parser import Parser
 import sys
 
 file_path = "test/lex/Hello.bot"
-key = "jasonhe"
 if len(sys.argv) >= 2:
     file_path = sys.argv[1]
 token_list = Lexer(file_path).lex()
@@ -35,14 +34,13 @@ app.add_middleware(
 )
 
 '''
-description: 接收到前端发来的消息之后给出应答
-param {MessageRequest} msg_request 接收到的用户消息
-return {dict} 等待时间和要回复的消息
+description: 接受客户端消息并返回应答
+param {str} status 客户端当前状态
+param {str} message 用户输入
+return {dict} 客户端下一个状态，要输出的信息，等待的时间和变量赋值表
 '''
-
-
 @app.get("/dsl")
-def give_response(status: str, message: str):
+def give_response(status: str, message: str) -> dict:
     return robot.handle_message(status, message)
 
 

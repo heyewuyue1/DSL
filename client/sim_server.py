@@ -21,6 +21,7 @@ app.add_middleware(
 
 @app.get("/dsl")
 def give_response(status: str, message: str):
+    # 随机的返回一些东西
     return {"status": "main", "message": ''.join(random.sample(string.ascii_letters + string.digits, 8)),
             "wait": random.randint(1, 10), "var":{}}
 

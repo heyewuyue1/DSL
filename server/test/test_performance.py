@@ -1,7 +1,6 @@
 import unittest
 import requests
 import random
-from bot.parser import WaitType
 from threading import Thread
 
 class PerformanceTest(unittest.TestCase):
@@ -25,7 +24,7 @@ class PerformanceTest(unittest.TestCase):
             self.assertEqual(eval(res.text)["var"], {"%num%": '2'})
         elif sel == 2:
             self.assertEqual(eval(res.text)["status"], "quitProc")
-            self.assertEqual(eval(res.text)["wait"], WaitType.Forever)
+            self.assertEqual(eval(res.text)["wait"], -1)
             self.assertEqual(eval(res.text)["message"], "Bye, %name%!The num is %num%.")
             self.assertEqual(eval(res.text)["var"], {"%name%": "Jiahao He"})
         else:

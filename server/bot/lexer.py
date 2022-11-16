@@ -2,7 +2,7 @@
 Description: 词法分析模块，将从文件读入字符流转换成为一个记号流
 Author: He Jiahao
 Date: 2022-09-30 15:31:54
-LastEditTime: 2022-11-16 00:02:43
+LastEditTime: 2022-11-16 13:40:08
 '''
 
 from enum import IntEnum
@@ -55,7 +55,7 @@ class Token(object):
         self._attr = attr
 
     '''
-    description: 为了方便调试，设计了记号类的字符串输出格式
+    description: 为了方便调试与测试，设计了记号类的字符串输出格式
     param {*} self
     return {*}
     '''
@@ -68,13 +68,13 @@ class Lexer(object):
     '''
     description: 词法分析器
     param {*} self
-    param {str} filePath 输入文件路径
+    param {str} file_path 输入文件路径
     return {*}
     '''
 
-    def __init__(self, filePath: str) -> None:
+    def __init__(self, file_path: str) -> None:
         self.token_list = []
-        self.input = open(filePath, mode='r', encoding="utf-8")
+        self.input = open(file_path, mode='r', encoding="utf-8")
 
     '''
     description: 进行词法分析
@@ -140,5 +140,10 @@ class Lexer(object):
         for token in self.token_list:
             print(token)
 
+    '''
+    description: 析构函数，关闭打开的文件
+    param {*} self
+    return {*}
+    '''
     def __del__(self) -> None:
         self.input.close()

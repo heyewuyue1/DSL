@@ -104,7 +104,7 @@ export default class DSLBot extends React.Component {
             }
             if (this.state.timerID !== -1)
                 clearTimeout(this.state.timerID)
-            if (response.data.wait > 0) {
+            if (response.data.wait >= 0) {
                 let _timerID = setTimeout(() => {
                     axios.get("http://127.0.0.1:8000/dsl", {
                         params:{

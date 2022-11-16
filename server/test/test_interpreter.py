@@ -1,6 +1,5 @@
 import unittest
 from bot.interpreter import Robot, RuntimeError
-from bot.parser import WaitType
 
 
 class InterpreterTest(unittest.TestCase):
@@ -21,7 +20,7 @@ class InterpreterTest(unittest.TestCase):
         },
         'aProc': {
             'Speak': 'money: %money%?',
-            'Wait': WaitType.Forever,
+            'Wait': -1,
             'Hear': {
                 'a': 'aProc',
                 'b': 'bProc',
@@ -36,7 +35,7 @@ class InterpreterTest(unittest.TestCase):
         robot = Robot(self.stub)
         self.assertEqual(robot.handle_message("main", "a"),
                          {"status": "aProc",
-                          "wait": WaitType.Forever,
+                          "wait": -1,
                           "message": "money: %money%?",
                           "var": {}
                           })
