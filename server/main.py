@@ -2,7 +2,7 @@
 Description: 后端应答模块，采用FastAPI实现
 Author: He Jiahao
 Date: 2022-09-09 17:05:54
-LastEditTime: 2022-11-17 21:23:53
+LastEditTime: 2022-11-17 21:32:20
 '''
 
 from fastapi import FastAPI
@@ -50,7 +50,6 @@ return {dict} 一个token，客户端下一个状态，等待的时间和要输�
 def give_token() -> dict:
     token = robot.add_user(key, time_out)
     data = robot.handle_transfered(token, True, "main", "")
-    print(str(robot.user_var))
     return {"token": token, "status": data["status"], "wait": data["wait"], "message": data["message"]}
 
 
