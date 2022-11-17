@@ -2,23 +2,34 @@
 Description: 后端应答模块，采用FastAPI实现
 Author: He Jiahao
 Date: 2022-09-09 17:05:54
-LastEditTime: 2022-11-16 13:36:11
+LastEditTime: 2022-11-17 20:49:42
 '''
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-from bot.interpreter import Robot
 import uvicorn
-
-from bot.lexer import Lexer
-from bot.parser import Parser
-
+from fastapi.middleware.cors import CORSMiddleware
 import sys
 
-file_path = "test/lex/Hello.bot"
+from bot.interpreter import Robot
+from bot.lexer import Lexer
+from bot.parser import Parser
+import datetime
+
+file_path = "test/lex/Hello.bot"  # 要读取的脚本文件路径
+try:
+    log_file = open(datetime.datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S") + "-log.txt", "x")
+except:
+    log_file = open(datetime.datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S") + "-log.txt", "w")
+key = "jasonhe"  # 加密用的密钥
+time_out = 3600
 if len(sys.argv) >= 2:
     file_path = sys.argv[1]
+    if len(sys.argv) >= 3:
+        key = sys.argv[2]
+        if len(sys.argv) >= 4:
+            time_out = eval(sys.argv[3])
+
+# 生成语法树和机器人对象
 token_list = Lexer(file_path).lex()
 tree = Parser(token_list).parse()
 robot = Robot(tree)
@@ -33,17 +44,38 @@ app.add_middleware(
     allow_headers=["*"]  # 允许携带的 Headers
 )
 
+
+'''
+description: 处理客户端注册会话请求
+return {dict} 一个token，客户端下一个状态，等待的时间和要输出的信息
+'''
+
+
+@app.get("/register")
+def give_token() -> dict:
+    token = robot.add_user(key, time_out)
+    data = robot.handle_transfered(token, True, "main", "")
+    print(str(robot.user_var))
+    log_file.write(str(robot.user_var))
+    return {"token": token, "status": data["status"], "wait": data["wait"], "message": data["message"]}
+
+
 '''
 description: 接受客户端消息并返回应答
+param {str} token 客户端token
 param {str} status 客户端当前状态
 param {str} message 用户输入
-return {dict} 客户端下一个状态，要输出的信息，等待的时间和变量赋值表
+return {dict} 客户端下一个状态，等待的时间和要输出的信息
 '''
+
+
 @app.get("/dsl")
-def give_response(status: str, message: str) -> dict:
-    return robot.handle_message(status, message)
+def give_response(token: str, status: str, message: str) -> dict:
+    print(str(robot.user_var))
+    log_file.write(str(robot.user_var))
+    return robot.handle_message(token, status, message, key)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     uvicorn.run(app='main:app', host="127.0.0.1",
-                port=8000, reload=True, debug=True)
+                port=8000, reload=False, debug=True)

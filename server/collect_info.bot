@@ -35,7 +35,7 @@ Status confirm
     Hear "是" quitProc
     Hear "否" setName
     Default confirm
-    Timeout quit
+    Timeout quitProc
 
 Status timeoutProc
     Speak "您已经很久没有操作了，连接已断开"

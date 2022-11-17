@@ -1,5 +1,5 @@
 import unittest
-from bot.interpreter import Robot, RuntimeError
+from bot.interpreter import Robot
 
 
 class InterpreterTest(unittest.TestCase):
@@ -33,40 +33,29 @@ class InterpreterTest(unittest.TestCase):
     
     def test_normal(self):
         robot = Robot(self.stub)
-        self.assertEqual(robot.handle_message("main", "a"),
+        token = robot.add_user("jasonhe", 3600)
+        self.assertEqual(robot.handle_message(token, "main", "a", "jasonhe"),
                          {"status": "aProc",
                           "wait": -1,
                           "message": "money: %money%?",
-                          "var": {}
                           })
-
-    def test_undefined_status(self):
-        robot = Robot(self.stub)
-        with self.assertRaises(RuntimeError):
-            robot.handle_message("main", "b")
 
     def test_timeout(self):
         robot = Robot(self.stub)
-        self.assertEqual(robot.handle_message("main", "!!!timeout"),
+        token = robot.add_user("jasonhe", 3600)
+        self.assertEqual(robot.handle_message(token, "main", "_timeout_","jasonhe"),
                          {"status": "main",
                           "wait": 5,
-                          "message": "What can I help you, %name%?",
-                          "var": {
-                              '%name%': 'He Jiahao',
-                              '%num%': '0'
-                          }
+                          "message": "What can I help you, He Jiahao?",
                           })
 
     def test_default(self):
         robot = Robot(self.stub)
-        self.assertEqual(robot.handle_message("main", "default"),
+        token = robot.add_user("jasonhe", 3600)
+        self.assertEqual(robot.handle_message(token, "main", "default", "jasonhe"),
                          {"status": "main",
                           "wait": 5,
-                          "message": "What can I help you, %name%?",
-                          "var": {
-                              '%name%': 'He Jiahao',
-                              '%num%': '0'
-                          }
+                          "message": "What can I help you, He Jiahao?"
                           })
 
 

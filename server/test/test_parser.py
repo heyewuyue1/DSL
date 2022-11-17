@@ -20,17 +20,17 @@ class ParserTest(unittest.TestCase):
         Token(TokenType.ConstNum, "5"),
         Token(TokenType.Keyword, "Hear"),
         Token(TokenType.ConstStr, "ab*c"),
-        Token(TokenType.Status, "aProc"),
+        Token(TokenType.Status, "main"),
         Token(TokenType.Keyword, "Hear"),
         Token(TokenType.ConstStr, "bc*d"),
-        Token(TokenType.Status, "bProc"),
+        Token(TokenType.Status, "main"),
         Token(TokenType.Keyword, "Hear"),
         Token(TokenType.ConstStr, "quit"),
-        Token(TokenType.Status, "quitProc"),
+        Token(TokenType.Status, "main"),
         Token(TokenType.Keyword, "Default"),
-        Token(TokenType.Status, "defaultProc"),
+        Token(TokenType.Status, "main"),
         Token(TokenType.Keyword, "Timeout"),
-        Token(TokenType.Status, "quitProc")
+        Token(TokenType.Status, "main")
     ]
     
     # 正常输出
@@ -39,12 +39,12 @@ class ParserTest(unittest.TestCase):
         'Speak': 'What can I help you, %name%?',
         'Wait': 5,
         'Hear':{
-            'ab*c': 'aProc',
-            'bc*d': 'bProc',
-            'quit': 'quitProc'
+            'ab*c': 'main',
+            'bc*d': 'main',
+            'quit': 'main'
             }, 
-        'Default': 'defaultProc',
-        'Timeout': 'quitProc',
+        'Default': 'main',
+        'Timeout': 'main',
         'Operate': {
             '%name%':'He Jiahao',
             '%num%': '0'

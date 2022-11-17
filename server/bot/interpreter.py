@@ -2,22 +2,14 @@
 Description: 依照语法树解释执行机器人逻辑
 Author: He Jiahao
 Date: 2022-09-23 14:38:49
-LastEditTime: 2022-11-16 00:03:32
+LastEditTime: 2022-11-17 20:40:40
 '''
 
+
 import re
-
-
-class RuntimeError(Exception):
-    '''
-    description: 用于报出解释执行阶段的错误
-    param {*} self
-    param {str} _msg 错误信息
-    return {*}
-    '''
-
-    def __init__(self, _msg: str) -> None:
-        self.msg = _msg
+from threading import Lock
+from jose import jwt
+import datetime
 
 
 class Robot(object):
@@ -30,21 +22,48 @@ class Robot(object):
 
     def __init__(self, tree: dict) -> None:
         self.tree = tree
-
+        self.user_var = {}
+        self.mutex = Lock()
+        
     '''
-    description: 处理一条来自前端的消息
+    description: 注册一次会话
     param {*} self
-    param {MessageRequest} msg_req 接收到的前端的消息
-    return {dict} 返回一个字典，代表处理的结果
+    param {str} key 用于加密token的密钥
+    param {int} time_out 一次对话的有效时长
+    return {*}
     '''
+    def add_user(self, key: str, time_out: int) -> str:
+        payload = {
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=time_out),
+            "iss": "DSLUser",
+        }
+        token = jwt.encode(payload, key)
+        self.mutex.acquire()
+        self.user_var[token] = {}
+        self.mutex.release()
+        return token
 
-    def handle_message(self, status: str, message: str) -> dict:
-        transfer = True
+    '''
+    description: 处理一条来自前端的信息
+    param {*} self
+    param {str} token 客户端发来的令牌
+    param {str} status 客户端所处的状态
+    param {str} message 客户端发来的信息
+    param {str} key 用于解码token的密钥
+    return {*}
+    '''
+    def handle_message(self, token: str, status: str, message: str, key: str) -> dict:
+        # 如果会话已经过期
+        try:
+            data = jwt.decode(token, key)
+            if data["iss"] != "DSLUser":
+                return {}
+        except:
+            return {}
+        is_transferred = True
         # 先决定接受到这条消息之后转移到哪个状态
-        if status == "_START_":
-            next_status = "main"
         # 如果是超时消息，转移到Timeout状态
-        elif message == "!!!timeout":
+        if message == "_timeout_":
             next_status = self.tree[status]["Timeout"]
         # 如果是普通消息，匹配Hear语句中的正则表达式
         else:
@@ -58,15 +77,29 @@ class Robot(object):
                 next_status = self.tree[status].get("Default")
                 if not next_status:  # 如果没有Default状态，不进行转移
                     next_status = status
-                    transfer = False
+                    is_transferred = False
+        return self.handle_transfered(token, is_transferred, next_status, message)
 
+    def handle_transfered(self, token: str, is_transferred: bool, next_status: str, message: str) -> dict:
+        self.mutex.acquire()
         # 转移到新状态之后，先为变量赋值
-        if not self.tree.get(next_status):
-            raise RuntimeError("Undefined status: " + next_status)
-        var_assign = self.tree[next_status]["Operate"]
+        for i in self.user_var[token]:
+            if (self.user_var[token][i] == "_text_"):
+                self.user_var[token][i] = message
+        for i in self.tree[next_status]["Operate"]:
+            if self.tree[next_status]["Operate"][i] != "_text_":
+                self.user_var[token][i] = self.tree[next_status]["Operate"][i]
         # 再决定等待时间和应答消息
         wait = self.tree[next_status]["Wait"]
         message = ""
-        if transfer and self.tree[next_status].get("Speak"):
+        if is_transferred and self.tree[next_status].get("Speak"):
             message = self.tree[next_status]["Speak"]
-        return {"status": next_status, "wait": wait, "message": message, "var": var_assign}
+        for i in self.user_var[token]:
+            if self.user_var[token][i] != "_text_":
+                message = message.replace(i, self.user_var[token][i])
+        # 特殊处理值为"_text_"的变量
+        for i in self.tree[next_status]["Operate"]:
+            if self.tree[next_status]["Operate"][i] == "_text_":
+                self.user_var[token][i] = self.tree[next_status]["Operate"][i]
+        self.mutex.release()
+        return {"status": next_status, "wait": wait, "message": message}

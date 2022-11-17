@@ -2,11 +2,12 @@
 Description: 语法分析模块，将输入的记号流转化为语法树
 Author: He Jiahao
 Date: 2022-10-01 11:43:32
-LastEditTime: 2022-11-16 13:57:16
+LastEditTime: 2022-11-17 17:30:24
 '''
 
 from bot.lexer import Token, TokenType
 import warnings
+
 
 class ParseError(Exception):
     '''
@@ -190,6 +191,20 @@ class Parser(object):
                           '" has nothing to speak.', UserWarning)
 
     '''
+    description: 在处理完所有记号之后进行整体检查，查看有无未定义的状态或者没有定义main状态
+    param {*} self
+    return {*}
+    '''
+
+    def overall_check(self) -> None:
+        all_status = [s for s in self.tree]
+        for token in self.token_list:
+            if token._type == TokenType.Status and token._attr not in all_status:
+                raise ParseError("Undefined Status: " + token._attr)
+        if not self.has_main:
+            raise ParseError("No main status to begin with")
+
+    '''
     description: 根据当前读到的符号选择不同语句的处理函数
     param {*} self
     return {*}
@@ -214,6 +229,6 @@ class Parser(object):
             else:
                 raise ParseError("Expected a keyword or an Identifier")
         self.status_check()
-        if not self.has_main:
-            raise ParseError("No main status to begin with")
+        self.overall_check()
+
         return self.tree
