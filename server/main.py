@@ -2,7 +2,7 @@
 Description: 后端应答模块，采用FastAPI实现
 Author: He Jiahao
 Date: 2022-09-09 17:05:54
-LastEditTime: 2022-11-17 20:58:25
+LastEditTime: 2022-11-17 21:23:53
 '''
 
 from fastapi import FastAPI
@@ -13,7 +13,6 @@ import sys
 from bot.interpreter import Robot
 from bot.lexer import Lexer
 from bot.parser import Parser
-import datetime
 
 file_path = "test/lex/Hello.bot"  # 要读取的脚本文件路径
 key = "jasonhe"  # 加密用的密钥

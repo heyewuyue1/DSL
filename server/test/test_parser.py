@@ -32,22 +32,22 @@ class ParserTest(unittest.TestCase):
         Token(TokenType.Keyword, "Timeout"),
         Token(TokenType.Status, "main")
     ]
-    
+
     # 正常输出
     result1 = {
-    'main': {
-        'Speak': 'What can I help you, %name%?',
-        'Wait': 5,
-        'Hear':{
-            'ab*c': 'main',
-            'bc*d': 'main',
-            'quit': 'main'
-            }, 
-        'Default': 'main',
-        'Timeout': 'main',
-        'Operate': {
-            '%name%':'He Jiahao',
-            '%num%': '0'
+        'main': {
+            'Speak': 'What can I help you, %name%?',
+            'Wait': 5,
+            'Hear': {
+                'ab*c': 'main',
+                'bc*d': 'main',
+                'quit': 'main'
+            },
+            'Default': 'main',
+            'Timeout': 'main',
+            'Operate': {
+                '%name%': 'He Jiahao',
+                '%num%': '0'
             }
         }
     }
@@ -140,31 +140,31 @@ class ParserTest(unittest.TestCase):
 
     # 没有main状态
     stub7 = [
-            Token(TokenType.ConstStr, "What can I help you, %name%?"),
-            Token(TokenType.Keyword, "Status"),
-            Token(TokenType.Status, "m"),
-            Token(TokenType.Keyword, "Speak"),
-            Token(TokenType.ConstStr, "What can I help you, %name%?"),
-            Token(TokenType.Keyword, "Wait"),
-            Token(TokenType.ConstNum, "5"),
-            Token(TokenType.Keyword, "Hear"),
-            Token(TokenType.ConstStr, "ab*c"),
-            Token(TokenType.Status, "aProc"),
-            Token(TokenType.Keyword, "Default"),
-            Token(TokenType.Status, "defaultProc"),
-            Token(TokenType.Keyword, "Timeout"),
-            Token(TokenType.Status, "quitProc"),
-        ]
+        Token(TokenType.ConstStr, "What can I help you, %name%?"),
+        Token(TokenType.Keyword, "Status"),
+        Token(TokenType.Status, "m"),
+        Token(TokenType.Keyword, "Speak"),
+        Token(TokenType.ConstStr, "What can I help you, %name%?"),
+        Token(TokenType.Keyword, "Wait"),
+        Token(TokenType.ConstNum, "5"),
+        Token(TokenType.Keyword, "Hear"),
+        Token(TokenType.ConstStr, "ab*c"),
+        Token(TokenType.Status, "aProc"),
+        Token(TokenType.Keyword, "Default"),
+        Token(TokenType.Status, "defaultProc"),
+        Token(TokenType.Keyword, "Timeout"),
+        Token(TokenType.Status, "quitProc"),
+    ]
 
     def test_normal(self):
         parser = Parser(self.stub1)
         self.assertEqual(parser.parse(), self.result1)
-    
+
     def test_no_sname(self):
         parser = Parser(self.stub2)
         with self.assertRaises(ParseError):
             parser.parse()
-    
+
     def test_duplicate_status(self):
         parser = Parser(self.stub3)
         with self.assertRaises(ParseError):
@@ -190,7 +190,6 @@ class ParserTest(unittest.TestCase):
         with self.assertRaises(ParseError):
             parser.parse()
 
+
 if __name__ == "__main__":
     unittest.main()
-
-        

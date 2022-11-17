@@ -30,22 +30,22 @@ class InterpreterTest(unittest.TestCase):
             'Operate': {},
         }
     }
-    
+
     def test_normal(self):
         robot = Robot(self.stub)
         token = robot.add_user("jasonhe", 3600)
         self.assertEqual(robot.handle_message(token, "main", "a", "jasonhe"),
                          {"status": "aProc",
-                          "wait": -1,
+                         "wait": -1,
                           "message": "money: %money%?",
                           })
 
     def test_timeout(self):
         robot = Robot(self.stub)
         token = robot.add_user("jasonhe", 3600)
-        self.assertEqual(robot.handle_message(token, "main", "_timeout_","jasonhe"),
+        self.assertEqual(robot.handle_message(token, "main", "_timeout_", "jasonhe"),
                          {"status": "main",
-                          "wait": 5,
+                         "wait": 5,
                           "message": "What can I help you, He Jiahao?",
                           })
 
@@ -54,7 +54,7 @@ class InterpreterTest(unittest.TestCase):
         token = robot.add_user("jasonhe", 3600)
         self.assertEqual(robot.handle_message(token, "main", "default", "jasonhe"),
                          {"status": "main",
-                          "wait": 5,
+                         "wait": 5,
                           "message": "What can I help you, He Jiahao?"
                           })
 

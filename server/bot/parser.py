@@ -2,7 +2,7 @@
 Description: 语法分析模块，将输入的记号流转化为语法树
 Author: He Jiahao
 Date: 2022-10-01 11:43:32
-LastEditTime: 2022-11-17 17:30:24
+LastEditTime: 2022-11-17 21:19:52
 '''
 
 from bot.lexer import Token, TokenType
@@ -55,13 +55,13 @@ class Parser(object):
         if self.current_status != "":
             self.status_check()
         self.idx += 1
-        if self.token_list[self.idx]._type != TokenType.Status or self.idx >= len(self.token_list):
+        if self.token_list[self.idx].type != TokenType.Status or self.idx >= len(self.token_list):
             raise ParseError("Expected a Status name.")
-        if self.token_list[self.idx]._attr != "main" or self.token_list[self.idx]._attr == "main" and self.has_main:
-            if self.tree.get(self.token_list[self.idx]._attr) != None:
+        if self.token_list[self.idx].attr != "main" or self.token_list[self.idx].attr == "main" and self.has_main:
+            if self.tree.get(self.token_list[self.idx].attr) != None:
                 raise ParseError("Duplicate Status name: " +
-                                 self.token_list[self.idx]._attr)
-            self.tree[self.token_list[self.idx]._attr] = {
+                                 self.token_list[self.idx].attr)
+            self.tree[self.token_list[self.idx].attr] = {
                 "Speak": "",
                 "Wait": -1,
                 "Hear": {},
@@ -69,7 +69,7 @@ class Parser(object):
                 "Timeout": "",
                 "Operate": {}
             }
-        self.current_status = self.token_list[self.idx]._attr
+        self.current_status = self.token_list[self.idx].attr
         self.idx += 1
 
     '''
@@ -80,9 +80,9 @@ class Parser(object):
 
     def parse_speak(self) -> None:
         self.idx += 1
-        if self.token_list[self.idx]._type != TokenType.ConstStr or self.idx >= len(self.token_list):
+        if self.token_list[self.idx].type != TokenType.ConstStr or self.idx >= len(self.token_list):
             raise ParseError("Expected a string constant")
-        self.tree[self.current_status]["Speak"] = self.token_list[self.idx]._attr
+        self.tree[self.current_status]["Speak"] = self.token_list[self.idx].attr
         self.idx += 1
 
     '''
@@ -93,13 +93,13 @@ class Parser(object):
 
     def parse_hear(self) -> None:
         self.idx += 1
-        if self.token_list[self.idx]._type != TokenType.ConstStr or self.idx >= len(self.token_list):
+        if self.token_list[self.idx].type != TokenType.ConstStr or self.idx >= len(self.token_list):
             raise ParseError("Expected a string constant")
-        condition = self.token_list[self.idx]._attr
+        condition = self.token_list[self.idx].attr
         self.idx += 1
-        if self.token_list[self.idx]._type != TokenType.Status or self.idx >= len(self.token_list):
+        if self.token_list[self.idx].type != TokenType.Status or self.idx >= len(self.token_list):
             raise ParseError("Expected a status to transfer")
-        next_status = self.token_list[self.idx]._attr
+        next_status = self.token_list[self.idx].attr
         self.tree[self.current_status]["Hear"][condition] = next_status
         self.idx += 1
 
@@ -111,13 +111,13 @@ class Parser(object):
 
     def parse_wait(self) -> None:
         self.idx += 1
-        if self.token_list[self.idx]._type != TokenType.ConstNum or self.idx >= len(self.token_list):
+        if self.token_list[self.idx].type != TokenType.ConstNum or self.idx >= len(self.token_list):
             raise ParseError("Expected a wait time.")
-        if eval(self.token_list[self.idx]._attr) < 0:
+        if eval(self.token_list[self.idx].attr) < 0:
             raise ParseError(
                 "Wait time can only be an integer greater than 0.")
         self.tree[self.current_status]["Wait"] = eval(
-            self.token_list[self.idx]._attr)
+            self.token_list[self.idx].attr)
         self.idx += 1
 
     '''
@@ -128,9 +128,9 @@ class Parser(object):
 
     def parse_default(self) -> None:
         self.idx += 1
-        if self.token_list[self.idx]._type != TokenType.Status or self.idx >= len(self.token_list):
+        if self.token_list[self.idx].type != TokenType.Status or self.idx >= len(self.token_list):
             raise ParseError("Expected a Status name")
-        self.tree[self.current_status]["Default"] = self.token_list[self.idx]._attr
+        self.tree[self.current_status]["Default"] = self.token_list[self.idx].attr
         self.idx += 1
 
     '''
@@ -141,9 +141,9 @@ class Parser(object):
 
     def parse_timeout(self) -> None:
         self.idx += 1
-        if self.token_list[self.idx]._type != TokenType.Status or self.idx >= len(self.token_list):
+        if self.token_list[self.idx].type != TokenType.Status or self.idx >= len(self.token_list):
             raise ParseError("Expected a Status name")
-        self.tree[self.current_status]["Timeout"] = self.token_list[self.idx]._attr
+        self.tree[self.current_status]["Timeout"] = self.token_list[self.idx].attr
         self.idx += 1
 
     '''
@@ -153,15 +153,15 @@ class Parser(object):
     '''
 
     def parse_variable(self) -> None:
-        id_name = self.token_list[self.idx]._attr
+        id_name = self.token_list[self.idx].attr
         self.idx += 1
         next_token = self.token_list[self.idx]
         # 在外部定义的全局变量
-        if next_token._type == TokenType.Operator and next_token._attr == '=':
+        if next_token.type == TokenType.Operator and next_token.attr == '=':
             self.idx += 1
             next_token = self.token_list[self.idx]
-            if next_token._type == TokenType.ConstNum or next_token._type == TokenType.ConstStr:
-                value = next_token._attr
+            if next_token.type == TokenType.ConstNum or next_token.type == TokenType.ConstStr:
+                value = next_token.attr
                 op_state = self.current_status
                 if op_state == "":
                     op_state = "main"
@@ -199,8 +199,8 @@ class Parser(object):
     def overall_check(self) -> None:
         all_status = [s for s in self.tree]
         for token in self.token_list:
-            if token._type == TokenType.Status and token._attr not in all_status:
-                raise ParseError("Undefined Status: " + token._attr)
+            if token.type == TokenType.Status and token.attr not in all_status:
+                raise ParseError("Undefined Status: " + token.attr)
         if not self.has_main:
             raise ParseError("No main status to begin with")
 
@@ -212,19 +212,19 @@ class Parser(object):
 
     def parse(self) -> dict:
         while self.idx < len(self.token_list):
-            if self.token_list[self.idx]._attr == "Status":
+            if self.token_list[self.idx].attr == "Status":
                 self.parse_status()
-            elif self.token_list[self.idx]._attr == "Speak":
+            elif self.token_list[self.idx].attr == "Speak":
                 self.parse_speak()
-            elif self.token_list[self.idx]._attr == "Wait":
+            elif self.token_list[self.idx].attr == "Wait":
                 self.parse_wait()
-            elif self.token_list[self.idx]._attr == "Hear":
+            elif self.token_list[self.idx].attr == "Hear":
                 self.parse_hear()
-            elif self.token_list[self.idx]._attr == "Default":
+            elif self.token_list[self.idx].attr == "Default":
                 self.parse_default()
-            elif self.token_list[self.idx]._attr == "Timeout":
+            elif self.token_list[self.idx].attr == "Timeout":
                 self.parse_timeout()
-            elif self.token_list[self.idx]._type == TokenType.Identifier:
+            elif self.token_list[self.idx].type == TokenType.Identifier:
                 self.parse_variable()
             else:
                 raise ParseError("Expected a keyword or an Identifier")

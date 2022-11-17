@@ -2,7 +2,7 @@
 Description: 依照语法树解释执行机器人逻辑
 Author: He Jiahao
 Date: 2022-09-23 14:38:49
-LastEditTime: 2022-11-17 20:40:40
+LastEditTime: 2022-11-17 21:25:07
 '''
 
 
@@ -24,7 +24,7 @@ class Robot(object):
         self.tree = tree
         self.user_var = {}
         self.mutex = Lock()
-        
+
     '''
     description: 注册一次会话
     param {*} self
@@ -32,6 +32,7 @@ class Robot(object):
     param {int} time_out 一次对话的有效时长
     return {*}
     '''
+
     def add_user(self, key: str, time_out: int) -> str:
         payload = {
             "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=time_out),
@@ -52,6 +53,7 @@ class Robot(object):
     param {str} key 用于解码token的密钥
     return {*}
     '''
+
     def handle_message(self, token: str, status: str, message: str, key: str) -> dict:
         # 如果会话已经过期
         try:
